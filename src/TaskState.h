@@ -1,18 +1,11 @@
 #ifndef TaskState_H
 #define TaskState_H
 #include "LED_t.h"
+#include "Button_t.h"
 #include "ErrorObject.h"
-#include "Timer.h"
+#include "AllMock.h"
 
 #include <stdlib.h>
-
-#define IS_RELEASED 0
-#define IS_PRESSED  !(IS_RELEASED)
-
-typedef struct
-{
-  int btnState;
-}Button_t;
 
 typedef enum 
 {
@@ -33,7 +26,7 @@ typedef struct
   Button_t*     whichButton;
 }TaskState;
 
-Button_t* createButton();
+
 TaskState* createTaskState(int blinkTime, LED_t* led, Button_t* btn);
 void buttonAndLED(TaskState* tsk);
 

@@ -1,11 +1,6 @@
 #include "TaskState.h"
 
-Button_t* createButton(){
-  Button_t* newButton = malloc(sizeof(Button_t));
-  newButton->btnState = IS_RELEASED;
-  
-  return newButton;
-}
+
 
 TaskState* createTaskState(int blinkTime, LED_t* led, Button_t* btn){
   TaskState* newState = malloc(sizeof(TaskState));
@@ -21,10 +16,11 @@ TaskState* createTaskState(int blinkTime, LED_t* led, Button_t* btn){
 
 
 void buttonAndLED(TaskState* tsk){
+  int timeDiff;
   switch((tsk->state))
   {
     case RELEASED:
-    if(tsk->whichButton->btnState == IS_PRESSED)
+    if(getButton(tsk->whichButton) == IS_PRESSED)
     {
       turnLED(tsk->whichLED, ON);
       tsk->recordedTime = getTime();
@@ -32,9 +28,25 @@ void buttonAndLED(TaskState* tsk){
     }
     break;
     case PRESSED_ON:
+    if(getButton(tsk->whichButton) == IS_RELEASED)
+    {
+      tsk->state  = RELEASED_ON;
+    }
+    timeDiff = getTime() - (tsk->recordedTime);
+    if(timeDiff >= tsk->interval)
+    {
+      turnLED(tsk->whichLED, OFF);
+      tsk->recordedTime = getTime();
+      tsk->state = PRESSED_OFF;
+    }
     
     break;
     case PRESSED_OFF:
+    if(getButton(tsk->whichButton) == IS_RELEASED)
+    {
+      tsk->state  = RELEASED_OFF;
+    }
+    
     
     break;
     case RELEASED_ON:

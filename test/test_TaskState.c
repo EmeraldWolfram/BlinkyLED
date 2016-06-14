@@ -2,29 +2,42 @@
 #include "TaskState.h"
 #include "LED_t.h"
 #include "ErrorObject.h"
-#include "mock_Timer.h"
+#include "mock_AllMock.h"
+#include "Button_t.h"
+
+int* btnTable = NULL;
+unsigned int* timeTable = NULL;
 
 unsigned int fake_getTime()
 {
-  return 10;
+  unsigned int time = *timeTable;
+  timeTable++;
+  return time;
+}
+
+int fake_getButton(Button_t* btn)
+{
+  int status = *btnTable;
+  btnTable++;
+  return status;
+}
+
+void initBtnTable(int table[]) {
+  btnTable = table;
+}
+
+void initTimeTable(int table[]) {
+  timeTable = table;
 }
 
 void setUp(void)
 {
   getTime_StubWithCallback(fake_getTime);
+  getButton_StubWithCallback(fake_getButton);
 }
 
 void tearDown(void)
 {
-}
-
-//Create a button with state IS_RELEASED
-void test_createButton(void)
-{ 
-  Button_t* btn = createButton();
-  
-  TEST_ASSERT_NOT_NULL(btn);
-  TEST_ASSERT_EQUAL(btn->btnState, IS_RELEASED);
 }
 
 void test_createTaskState(void)
@@ -33,33 +46,88 @@ void test_createTaskState(void)
   LED_t* gLed   = createLED();
   TaskState* tState = createTaskState(250, gLed, btn);
   
-  TEST_ASSERT_EQUAL(tState->state, RELEASED);
-  TEST_ASSERT_EQUAL(tState->recordedTime, 0);
-  TEST_ASSERT_EQUAL(tState->interval, 250);
-  TEST_ASSERT_EQUAL_PTR(tState->whichLED, gLed);
-  TEST_ASSERT_EQUAL_PTR(tState->whichButton, btn);
+  TEST_ASSERT_EQUAL(RELEASED, tState->state);
+  TEST_ASSERT_EQUAL(0, tState->recordedTime);
+  TEST_ASSERT_EQUAL(250, tState->interval);
+  TEST_ASSERT_EQUAL_PTR(gLed, tState->whichLED);
+  TEST_ASSERT_EQUAL_PTR(btn, tState->whichButton);
 }
 //====================================================================================
 /**************************************************************
   This test make sure the buttonAndLED function will only turn
   the LED ON when the button IS_PRESSED
  **************************************************************/
-void test_buttonAndLED(void)
+void test_buttonAndLED_RELEASED_State(void)
 {
+  int table[] = { IS_RELEASED, IS_PRESSED};
+  int timeTable[] = {0, 10};
+  
+  initBtnTable(table);
+  initTimeTable(timeTable);
+  
   TaskState* tState = createTaskState(250, createLED(), createButton());
   buttonAndLED(tState);
   TEST_ASSERT_FALSE(tState->whichLED->ledState);
-  TEST_ASSERT_EQUAL(tState->state, RELEASED);
-  TEST_ASSERT_EQUAL(tState->recordedTime, 0);
-  
-  tState->whichButton->btnState = IS_PRESSED;
+  TEST_ASSERT_EQUAL(RELEASED, tState->state);
+  TEST_ASSERT_EQUAL(0, tState->recordedTime);
   
   buttonAndLED(tState);
   TEST_ASSERT_TRUE(tState->whichLED->ledState);
-  TEST_ASSERT_EQUAL(tState->state, PRESSED_ON);
-  TEST_ASSERT_EQUAL(tState->recordedTime, 10);
+  TEST_ASSERT_EQUAL(PRESSED_ON, tState->state);
+  TEST_ASSERT_EQUAL(250, tState->interval);
+  TEST_ASSERT_EQUAL(0, tState->recordedTime);
+}
+//====================================================================================
+/**************************************************************
+  This test make sure the buttonAndLED function will goto
+  RELEASED_ON state when button is released
+  
+  Also, the recordedTime shall not be changed
+ **************************************************************/
+void test_buttonAndLED_PRESSED_ON_State_to_RELEASED_ON(void)
+{
+  int table[] = {IS_PRESSED,IS_RELEASED};
+  int timeTable[] = {0, 10};
+  
+  initBtnTable(table);
+  initTimeTable(timeTable);
+  
+  TaskState* tState = createTaskState(250, createLED(), createButton());
+  tState->state = PRESSED_ON;
+  //End of Initialization
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(PRESSED_ON, tState->state);
+  TEST_ASSERT_EQUAL(0, tState->recordedTime);
+  
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(RELEASED_ON, tState->state);
+  TEST_ASSERT_EQUAL(0, tState->recordedTime);
 }
 
+/**************************************************************
+  This test tested transition from PRESSED_ON to PRESSED_OFF
+  when timer expired
+ **************************************************************/
+void test_buttonAndLED_PRESSED_ON_State_to_PRESSED_OFF(void)
+{
+  int table[] = {IS_PRESSED, IS_PRESSED, IS_PRESSED};
+  int timeTable[] = {0, 249, 250, 252};
+  
+  initBtnTable(table);
+  initTimeTable(timeTable);
+  
+  TaskState* tState = createTaskState(250, createLED(), createButton());
+  tState->state = PRESSED_ON;
+  //End of Initialization
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(PRESSED_ON, tState->state);
 
-
-
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(PRESSED_ON, tState->state);
+  
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(PRESSED_OFF, tState->state);
+  TEST_ASSERT_FALSE(tState->whichLED->ledState);
+  TEST_ASSERT_EQUAL(252, tState->recordedTime);
+}
+//===============================================================================
