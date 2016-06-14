@@ -2,6 +2,7 @@
 #define TaskState_H
 #include "LED_t.h"
 #include "ErrorObject.h"
+#include "Timer.h"
 
 #include <stdlib.h>
 
@@ -33,7 +34,7 @@ typedef struct
 }TaskState;
 
 Button_t* createButton();
-TaskState* createTaskState(FsmState state, int blinkTime, LED_t* led, Button_t* btn);
+TaskState* createTaskState(int blinkTime, LED_t* led, Button_t* btn);
 void buttonAndLED(TaskState* tsk);
 
 #endif // TaskState_H

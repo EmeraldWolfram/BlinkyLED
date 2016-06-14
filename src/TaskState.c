@@ -7,10 +7,10 @@ Button_t* createButton(){
   return newButton;
 }
 
-TaskState* createTaskState(FsmState state, int blinkTime, LED_t* led, Button_t* btn){
+TaskState* createTaskState(int blinkTime, LED_t* led, Button_t* btn){
   TaskState* newState = malloc(sizeof(TaskState));
   
-  newState->state         = state;
+  newState->state         = RELEASED;
   newState->recordedTime  = 0;
   newState->interval      = blinkTime;
   newState->whichLED      = led;
@@ -24,10 +24,12 @@ void buttonAndLED(TaskState* tsk){
   switch((tsk->state))
   {
     case RELEASED:
-    //if(getButton(tsk->whichButton) == IS_PRESSED)
-    //{
+    if(tsk->whichButton->btnState == IS_PRESSED)
+    {
       turnLED(tsk->whichLED, ON);
-    //}
+      tsk->recordedTime = getTime();
+      tsk->state  = PRESSED_ON;
+    }
     break;
     case PRESSED_ON:
     
