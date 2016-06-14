@@ -70,10 +70,23 @@ void buttonAndLED(TaskState* tsk){
       }
       break;
     case RELEASED_OFF:
-    
+      if(getButton(tsk->whichButton) == IS_PRESSED)
+      {
+        tsk->state  = TURNING_OFF;
+      }
+      timeDiff = getTime() - (tsk->recordedTime);
+      if(timeDiff >= tsk->interval)
+      {
+        turnLED(tsk->whichLED, ON);
+        tsk->recordedTime = getTime();
+        tsk->state = RELEASED_ON;
+      }
       break;
     case TURNING_OFF:
-    
+      if(getButton(tsk->whichButton) == IS_RELEASED)
+      {
+        tsk->state  = RELEASED;
+      }
       break;
   }
 }

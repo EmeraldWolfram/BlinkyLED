@@ -241,3 +241,77 @@ void test_buttonAndLED_PRESSED_OFF_State_to_RELEASED_OFF_State(void)
   TEST_ASSERT_EQUAL(0, tState->recordedTime);
 }
 //=RELEASED_OFF State================================================================
+/**************************************************************
+  This test make sure the buttonAndLED function will goto
+  RELEASED_ON state when timer expired during RELEASED_OFF
+  State
+ **************************************************************/
+void test_buttonAndLED_RELEASED_OFF_State_to_RELEASED_ON_State(void)
+{
+  int table[] = {IS_RELEASED, IS_RELEASED, IS_RELEASED};
+  int timeTable[] = {0, 249, 250, 251};
+  
+  initBtnTable(table);
+  initTimeTable(timeTable);
+  
+  TaskState* tState = createTaskState(250, createLED(), createButton());
+  tState->state = RELEASED_OFF;
+  //End of Initialization
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(RELEASED_OFF, tState->state);
+
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(RELEASED_OFF, tState->state);
+  
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(RELEASED_ON, tState->state);
+  TEST_ASSERT_TRUE(tState->whichLED->ledState);
+  TEST_ASSERT_EQUAL(251, tState->recordedTime);
+}
+
+/**************************************************************
+  This test make sure the buttonAndLED function will goto
+  TURNING_OFF state when button IS_PRESSED during RELEASED_OFF
+  State
+ **************************************************************/
+void test_buttonAndLED_RELEASED_OFF_State_to_TURNING_OFF_State(void)
+{
+  int table[] = {IS_RELEASED, IS_PRESSED};
+  int timeTable[] = {0, 249, 250};
+  
+  initBtnTable(table);
+  initTimeTable(timeTable);
+  
+  TaskState* tState = createTaskState(250, createLED(), createButton());
+  tState->state = RELEASED_OFF;
+  //End of Initialization
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(RELEASED_OFF, tState->state);
+
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(TURNING_OFF, tState->state);
+  TEST_ASSERT_FALSE(tState->whichLED->ledState);
+}
+//=TURNING_OFF State=============================================================
+/**************************************************************
+  This test make sure the buttonAndLED function will goto
+  RELEASED state when button IS_RELEASED during TURNING_OFF
+  State
+ **************************************************************/
+void test_buttonAndLED_TURNING_OFF_State_to_RELEASED_State(void)
+{
+  int table[] = {IS_PRESSED, IS_RELEASED};
+  int timeTable[] = {0, 249, 250};
+  
+  initBtnTable(table);
+  initTimeTable(timeTable);
+  
+  TaskState* tState = createTaskState(250, createLED(), createButton());
+  tState->state = TURNING_OFF;
+  //End of Initialization
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(TURNING_OFF, tState->state);
+
+  buttonAndLED(tState);
+  TEST_ASSERT_EQUAL(RELEASED, tState->state);
+}
