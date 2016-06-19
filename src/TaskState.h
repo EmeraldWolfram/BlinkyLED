@@ -7,6 +7,9 @@
 
 #include <stdlib.h>
 
+#define FALSE 0
+#define TRUE  !(FALSE)
+
 typedef enum 
 {
   RELEASED,
@@ -24,6 +27,7 @@ typedef struct
   int           interval;
   LED_t*        whichLED;
   Button_t*     whichButton;
+  int           buttonReleased;
 }TaskState;
 
 
