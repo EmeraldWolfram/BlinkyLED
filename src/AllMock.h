@@ -6,6 +6,8 @@
 unsigned int getTime(); //getTime function should return the current Time in millisecond
 void restartTimer();
 
-int getButton(Button_t* btn);
+//int getButton(Button_t* btn);
+
+int readButton();
 
 #endif // AllMock_H
