@@ -36,6 +36,7 @@ void tearDown(void)
 {
 }
 
+//Create a button at the initial state
 void test_createButton(void)
 { 
   int table[] = {IS_RELEASED};
@@ -51,6 +52,12 @@ void test_createButton(void)
   TEST_ASSERT_EQUAL(0, btn->recordedTime);
 }
 
+/**
+ *
+ *  Check if IDLE will remain at IDLE state
+ *  if no IS_PRESSED event detected
+ *
+ */
 void test_buttonFSM_maintain_in_IDLE_State(void)
 {
   int table[] = {IS_RELEASED, IS_RELEASED};
@@ -69,6 +76,11 @@ void test_buttonFSM_maintain_in_IDLE_State(void)
   TEST_ASSERT_EQUAL(0, btn->recordedTime);
 }
 
+/**
+ *  Check if IDLE State can detect the PRESSED event
+ *  and go to the WAIT State
+ *
+ */
 void test_buttonFSM_IDLE_State_to_WAIT_State(void)
 {
   int table[] = {IS_RELEASED, IS_PRESSED};
@@ -87,6 +99,12 @@ void test_buttonFSM_IDLE_State_to_WAIT_State(void)
   TEST_ASSERT_EQUAL(10, btn->recordedTime);
 }
 
+/**
+ *
+ *  Check if WAIT State can update the button->output
+ *  if the previously detected changes was not a glitch
+ *
+ */
 void test_buttonFSM_WAIT_State_update_output_if_really_changed(void)
 {
   int table[] = {IS_RELEASED, IS_PRESSED, IS_PRESSED};
@@ -118,6 +136,12 @@ void test_buttonFSM_WAIT_State_update_output_if_really_changed(void)
   TEST_ASSERT_EQUAL(10, btn->recordedTime);
 }
 
+/**
+ *  
+ *  Check if WAIT State can remain the previous button->output
+ *  if the previous detected changes was a glitch
+ *
+ */
 void test_buttonFSM_WAIT_State_output_no_change_if_just_once(void)
 {
   int table[] = {IS_RELEASED, IS_PRESSED, IS_RELEASED};
